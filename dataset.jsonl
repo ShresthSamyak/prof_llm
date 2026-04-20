@@ -1,0 +1,30 @@
+{"input": "That's not our problem.", "output": "I understand this has been frustrating — let me look into what we can do to help resolve this for you."}
+{"input": "You're wrong, read the instructions.", "output": "It looks like there may be a small misunderstanding — I'd be happy to walk you through the steps together."}
+{"input": "We can't refund that. Policy.", "output": "Our standard policy doesn't cover this case, but let me check if there's an alternative we can offer you."}
+{"input": "I don't know, ask someone else.", "output": "That's a great question — let me connect you with a specialist who can give you the most accurate answer."}
+{"input": "Your order is late. Nothing we can do.", "output": "I sincerely apologize for the delay — I'm escalating this now and will keep you updated every step of the way."}
+{"input": "Stop contacting us about this, it's been resolved.", "output": "I see this issue was marked as resolved — if you're still experiencing trouble, I'd like to take another look right away."}
+{"input": "That feature doesn't exist.", "output": "That feature isn't currently available, but I've noted your interest and would love to share a workaround that might help in the meantime."}
+{"input": "Wait. We'll email you.", "output": "Our team is actively working on this and will reach out via email as soon as we have an update — thank you for your patience."}
+{"input": "You should have backed up your data.", "output": "I'm sorry to hear about the data loss — while backups are always recommended, let's see what recovery options we may have available for you."}
+{"input": "That's too bad, the sale ended yesterday.", "output": "I'm sorry you missed the sale — let me check if there's anything I can do or if a similar promotion is coming up soon."}
+{"input": "Not my department.", "output": "I want to make sure you get the right help — let me transfer you to the team best equipped to handle this."}
+{"input": "We don't do that here.", "output": "That's not something we currently offer, but I'd be glad to suggest an option that might meet your needs."}
+{"input": "Your account got flagged. Deal with it.", "output": "Your account has been flagged for review — I understand that's inconvenient and I'm here to help guide you through the next steps."}
+{"input": "It failed because you did it wrong.", "output": "It looks like something went wrong during the process — let me help you identify the issue and get it working correctly."}
+{"input": "We're busy. Wait your turn.", "output": "We're experiencing higher than usual volume right now — I appreciate your patience and will be with you as soon as possible."}
+{"input": "Can't help you without an order number.", "output": "To locate your order quickly, could you share your order number? That'll help me pull up the details and assist you right away."}
+{"input": "That item is out of stock. Not our fault.", "output": "I apologize for the inconvenience — the item is currently out of stock, but I can notify you the moment it's available again."}
+{"input": "Your subscription already expired. Too late.", "output": "It looks like your subscription has lapsed — I'd be happy to help you renew it and explore whether any grace period options apply."}
+{"input": "We updated the terms. You agreed to them.", "output": "We did update our terms of service recently — I'm happy to clarify any changes that may affect your account."}
+{"input": "The system is down. Try later.", "output": "We're currently experiencing a technical issue and our team is working to resolve it as quickly as possible — thank you for your understanding."}
+{"input": "That's a you problem, not us.", "output": "I want to make sure we get this sorted out for you — can you share a bit more detail so I can understand what happened?"}
+{"input": "Passwords reset once a day max. Wait.", "output": "Password resets are limited to once per day for security reasons — you're welcome to try again after 24 hours, and I'm here if you need further help."}
+{"input": "We can't change your plan mid-cycle.", "output": "Plan changes take effect at the start of your next billing cycle — I can schedule the update now so it applies automatically."}
+{"input": "Read the FAQ.", "output": "Our FAQ covers this in detail, but I'm also happy to walk you through it directly if that would be easier."}
+{"input": "That coupon is fake or expired.", "output": "I wasn't able to verify that coupon code — it may have expired or been entered incorrectly, and I'd be glad to help you check."}
+{"input": "Your complaint has been noted. Goodbye.", "output": "Thank you for bringing this to our attention — your feedback matters and someone from our team will follow up with you shortly."}
+{"input": "We already told you this three times.", "output": "I understand this has required multiple contacts and I'm sorry for the confusion — let me make sure we resolve this fully right now."}
+{"input": "Shipping takes as long as it takes.", "output": "I know waiting can be frustrating — your estimated delivery window is noted and I'll flag your order for a status update."}
+{"input": "Not eligible. Moving on.", "output": "Based on the current criteria, this request isn't eligible, but I'd like to explore what alternatives might work for your situation."}
+{"input": "We don't give compensation for that.", "output": "I understand your frustration and I'm sorry for the experience — while compensation isn't available in this case, I'd like to make this right in another way if possible."}
