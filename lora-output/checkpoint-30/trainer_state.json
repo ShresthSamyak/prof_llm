@@ -10,44 +10,44 @@
   "log_history": [
     {
       "epoch": 0.5,
-      "grad_norm": 0.2783016860485077,
+      "grad_norm": 0.2565240263938904,
       "learning_rate": 0.0001666666666666667,
-      "loss": 4.5847,
+      "loss": 4.5854,
       "step": 5
     },
     {
       "epoch": 1.0,
-      "grad_norm": 0.33185136318206787,
+      "grad_norm": 0.3230838477611542,
       "learning_rate": 0.00013333333333333334,
-      "loss": 4.4952,
+      "loss": 4.4936,
       "step": 10
     },
     {
       "epoch": 1.5,
-      "grad_norm": 0.4063449501991272,
+      "grad_norm": 0.41469457745552063,
       "learning_rate": 0.0001,
-      "loss": 4.4481,
+      "loss": 4.4471,
       "step": 15
     },
     {
       "epoch": 2.0,
-      "grad_norm": 0.456237256526947,
+      "grad_norm": 0.4630580246448517,
       "learning_rate": 6.666666666666667e-05,
-      "loss": 4.547,
+      "loss": 4.5439,
       "step": 20
     },
     {
       "epoch": 2.5,
-      "grad_norm": 0.5071883201599121,
+      "grad_norm": 0.5062320232391357,
       "learning_rate": 3.3333333333333335e-05,
-      "loss": 4.4839,
+      "loss": 4.4814,
       "step": 25
     },
     {
       "epoch": 3.0,
-      "grad_norm": 0.5364530086517334,
+      "grad_norm": 0.5363661050796509,
       "learning_rate": 0.0,
-      "loss": 4.4817,
+      "loss": 4.4779,
       "step": 30
     }
   ],
