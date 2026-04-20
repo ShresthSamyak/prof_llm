@@ -1,5 +1,24 @@
 # Polite Response Generator using LLMs
 
+> A system that transforms blunt or unhelpful customer support responses into polite, professional replies using large language models.
+
+---
+
+## Table of Contents
+
+- [Objective](#objective)
+- [Approach](#approach)
+- [Dataset](#dataset)
+- [Model Progression](#model-progression)
+- [Fine-Tuning Results](#fine-tuning-results-tinyllama--lora)
+- [Qualitative Results](#qualitative-results)
+- [Limitations](#limitations)
+- [Conclusion](#conclusion)
+- [Improvements With More Time](#improvements-with-more-time)
+- [How to Run](#how-to-run)
+
+---
+
 ## Objective
 
 Build a system that converts blunt or unhelpful customer support responses into polite, professional replies using LLMs.
@@ -20,9 +39,13 @@ Small language models were fine-tuned on a custom dataset using LoRA (Low-Rank A
 
 ## Dataset
 
-- **Size:** 40 examples (JSONL format)
-- **Schema:** `{"instruction": "...", "input": "...", "output": "..."}`
-- **Coverage:**
+| Property | Detail |
+|---|---|
+| **Size** | 40 examples |
+| **Format** | JSONL |
+| **Schema** | `{"instruction": "...", "input": "...", "output": "..."}` |
+
+**Category Coverage:**
 
 | Category | Example Input |
 |---|---|
@@ -33,20 +56,20 @@ Small language models were fine-tuned on a custom dataset using LoRA (Low-Rank A
 | User mistake | "You entered the wrong address. That's on you." |
 | Unknown answer | "I have no idea. Ask someone else." |
 
-- **Quality controls applied:**
-  - Zero repeated sentence-opening phrases
-  - 5 randomized instruction templates per training run (multi-template training)
-  - Outputs constrained to 1–2 sentences with empathy + next step
+**Quality Controls Applied:**
+- Zero repeated sentence-opening phrases
+- 5 randomized instruction templates per training run (multi-template training)
+- Outputs constrained to 1–2 sentences with empathy + next step
 
 ---
 
 ## Model Progression
 
-| Stage | Model | Result |
-|---|---|---|
-| Attempt 1 | distilgpt2 (82M) | Failed — repetition loops, no learning |
-| Attempt 2 | FLAN-T5-base (250M) | Partial — loss non-zero but outputs generic |
-| Attempt 3 | TinyLlama-1.1B-Chat (1.1B) | **Success — clear convergence and tone transformation** |
+| Stage | Model | Parameters | Outcome |
+|---|---|---|---|
+| Attempt 1 | distilgpt2 | 82M | Failed — repetition loops, no learning |
+| Attempt 2 | FLAN-T5-base | 250M | Partial — loss non-zero but outputs generic |
+| Attempt 3 | TinyLlama-1.1B-Chat | 1.1B | **Success — clear convergence and tone transformation** |
 
 ---
 
@@ -96,6 +119,8 @@ Loss
                               Epoch
 ```
 
+**Logged Training Metrics:**
+
 | Step | Epoch | Loss | Grad Norm |
 |---|---|---|---|
 | 5 | 0.25 | 2.5968 | 1.97 |
@@ -111,7 +136,7 @@ Loss
 | 55 | 2.75 | 1.1456 | 3.13 |
 | 60 | 3.00 | 0.9951 | 2.85 |
 
-**Total reduction: ~62% loss decrease from step 1 to final step.**
+> **Total reduction: ~62% loss decrease from step 1 to final step.**
 
 ---
 
@@ -120,7 +145,7 @@ Loss
 ```
 Epoch 1  ██████████████████████░░░░░░░░  2.60 → 1.51  (-42%)
 Epoch 2  ████████████░░░░░░░░░░░░░░░░░░  1.51 → 1.10  (-27%)
-Epoch 3  ████████░░░░░░░░░░░░░░░░░░░░░░  1.10 → 1.00  (-9%)
+Epoch 3  ████████░░░░░░░░░░░░░░░░░░░░░░  1.10 → 1.00   (-9%)
 ```
 
 The sharpest learning occurred in Epoch 1, as expected — the model rapidly adjusting to the task format. Epochs 2–3 showed refinement.
@@ -137,7 +162,7 @@ The sharpest learning occurred in Epoch 1, as expected — the model rapidly adj
 | Your refund was denied. Nothing we can do. | Thank you for your support... *(irrelevant, repeated)* |
 | The system crashed. Try again later. | The system crashed. Try again later. *(copied input)* |
 
-**Failure modes:** repetition, input copying, incoherence.
+> **Failure modes:** repetition, input copying, incoherence.
 
 ---
 
@@ -179,8 +204,8 @@ Overall                     FAIL         PARTIAL           PASS
 ### 1. Over-generalization
 The model occasionally adds helpful intent not grounded in the input:
 
-> Input: *"The system crashed. Try again later."*
-> Output includes: *"Our team is working to resolve it"* — implied but not stated in original.
+> **Input:** *"The system crashed. Try again later."*
+> **Output includes:** *"Our team is working to resolve it"* — implied but not stated in original.
 
 This is a minor hallucination introduced by training signal patterns.
 
@@ -189,7 +214,7 @@ With only ~40 training examples, the model learned a narrow range of polite temp
 
 ```
 Observed output patterns (frequency):
-─────────────────────────────────────
+──────────────────────────────────────────────────────
 "We appreciate your patience..."      ████████░░  ~35%
 "I understand your concern..."        ██████░░░░  ~25%
 "Let me connect you with..."          ████░░░░░░  ~18%
@@ -233,9 +258,9 @@ All three must be sufficient. Failure in any one — as seen with distilgpt2 or 
 
 ## Improvements With More Time
 
-| Area | Current | Improvement |
+| Area | Current State | Proposed Improvement |
 |---|---|---|
-| Dataset size | 40 examples | 500–1000 examples |
+| Dataset size | 40 examples | 500–1,000 examples |
 | Base model | TinyLlama-1.1B | Mistral-7B-Instruct or Llama-3-8B |
 | Evaluation | Qualitative only | ROUGE, BERTScore, LLM-as-judge |
 | Training signal | Single task | Multi-task with difficulty curriculum |
@@ -245,13 +270,13 @@ All three must be sufficient. Failure in any one — as seen with distilgpt2 or 
 
 ## How to Run
 
-### Install dependencies
+### Prerequisites
 
 ```bash
 pip install transformers datasets peft accelerate sentencepiece
 ```
 
-### Train TinyLlama + LoRA
+### Train TinyLlama + LoRA *(recommended)*
 
 ```bash
 python train_tinyllama_lora.py
@@ -263,7 +288,9 @@ python train_tinyllama_lora.py
 python train_flan.py
 ```
 
-### Files
+---
+
+## Project Files
 
 | File | Description |
 |---|---|
