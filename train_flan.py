@@ -13,8 +13,8 @@ from transformers import (
 MODEL_NAME  = "google/flan-t5-base"
 DATA_PATH   = "dataset_instruct_40.jsonl"
 OUTPUT_DIR  = "./flan-output"
-MAX_INPUT   = 128
-MAX_TARGET  = 64
+MAX_INPUT   = 256
+MAX_TARGET  = 128
 EPOCHS      = 3
 BATCH_SIZE  = 4
 LR          = 3e-4
@@ -25,37 +25,40 @@ def load_jsonl(path):
     with open(path) as f:
         return [json.loads(l) for l in f if l.strip()]
 
-def format_input(ex):
-    return f"{ex['instruction']}\n\nMessage:\n{ex['input']}\n\nResponse:"
-
 raw     = load_jsonl(DATA_PATH)
-dataset = Dataset.from_list([{"source": format_input(ex), "target": ex["output"]} for ex in raw])
+dataset = Dataset.from_list(raw)
 
 # ── Tokenizer ─────────────────────────────────────────────────────────────────
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+tokenizer.pad_token = tokenizer.eos_token
 
-def tokenize(batch):
+def preprocess(example):
+    input_text  = f"{example['instruction']}\n\nMessage:\n{example['input']}\n\nResponse:"
+    target_text = example["output"]
+
     model_inputs = tokenizer(
-        batch["source"],
-        max_length=MAX_INPUT,
+        input_text,
+        max_length=256,
         truncation=True,
         padding="max_length",
     )
+
     labels = tokenizer(
-        batch["target"],
-        max_length=MAX_TARGET,
+        target_text,
+        max_length=128,
         truncation=True,
         padding="max_length",
     )
-    # Replace padding token id with -100 so it's ignored in loss
-    label_ids = [
-        [(t if t != tokenizer.pad_token_id else -100) for t in seq]
-        for seq in labels["input_ids"]
+
+    # IMPORTANT: replace padding tokens with -100
+    labels["input_ids"] = [
+        (l if l != tokenizer.pad_token_id else -100) for l in labels["input_ids"]
     ]
-    model_inputs["labels"] = label_ids
+
+    model_inputs["labels"] = labels["input_ids"]
     return model_inputs
 
-tokenized = dataset.map(tokenize, batched=True, remove_columns=["source", "target"])
+tokenized = dataset.map(preprocess, remove_columns=dataset.column_names)
 tokenized.set_format("torch")
 
 # ── Model ─────────────────────────────────────────────────────────────────────
