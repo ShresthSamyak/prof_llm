@@ -26,6 +26,27 @@ The LoRA fine-tuned model (distilgpt2) failed to generalize: outputs were either
 
 The fine-tuned model collapsed into repetition or input copying — classic signs of an underpowered model overfitting a tiny dataset without learning the underlying transformation. 40 examples are insufficient for a model that has no prior instruction-following ability.
 
+### Additional Experiment
+
+A second training attempt was conducted with improved formatting:
+
+- Instruction-style prompts
+- Label masking (training only on target output)
+
+Despite these improvements, the model still failed to produce reliable transformations.
+
+### Insight
+
+This indicates that:
+- Small models like distilgpt2 lack strong instruction-following priors
+- Small datasets (~40 examples) are insufficient for learning stylistic transformations
+
+Even with correct training setup, performance remained limited.
+
+This reinforces that successful fine-tuning depends heavily on:
+- base model capability
+- sufficient training data
+
 ## Improvements With More Time
 
 - Replace distilgpt2 with `google/flan-t5-base` or `TinyLlama-1.1B` — both have instruction-following priors that LoRA can effectively steer.
