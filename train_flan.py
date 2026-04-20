@@ -1,3 +1,4 @@
+import gc
 import json
 import torch
 from datasets import Dataset
@@ -12,9 +13,7 @@ from transformers import (
 # ── Config ────────────────────────────────────────────────────────────────────
 MODEL_NAME  = "google/flan-t5-base"
 DATA_PATH   = "dataset_instruct_40.jsonl"
-OUTPUT_DIR  = "./flan-output"
-MAX_INPUT   = 256
-MAX_TARGET  = 128
+OUTPUT_DIR  = "./flan_output_new"
 EPOCHS      = 3
 BATCH_SIZE  = 4
 LR          = 3e-4
@@ -29,43 +28,50 @@ raw     = load_jsonl(DATA_PATH)
 dataset = Dataset.from_list(raw)
 
 # ── Tokenizer ─────────────────────────────────────────────────────────────────
+# T5 has its own pad token (id=0) — do not override it
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-tokenizer.pad_token = tokenizer.eos_token
 
+# ── Preprocess ────────────────────────────────────────────────────────────────
+# No padding here — DataCollatorForSeq2Seq handles padding + -100 masking
 def preprocess(example):
-    input_text  = f"{example['instruction']}\n\nMessage:\n{example['input']}\n\nResponse:"
-    target_text = example["output"]
+    input_text = (
+        example["instruction"]
+        + "\n\nMessage:\n"
+        + example["input"]
+        + "\n\nResponse:"
+    )
 
     model_inputs = tokenizer(
         input_text,
-        max_length=256,
         truncation=True,
-        padding="max_length",
+        max_length=256,
     )
 
     labels = tokenizer(
-        target_text,
-        max_length=128,
+        example["output"],
         truncation=True,
-        padding="max_length",
+        max_length=128,
     )
-
-    # IMPORTANT: replace padding tokens with -100
-    labels["input_ids"] = [
-        (l if l != tokenizer.pad_token_id else -100) for l in labels["input_ids"]
-    ]
 
     model_inputs["labels"] = labels["input_ids"]
     return model_inputs
 
 tokenized = dataset.map(preprocess, remove_columns=dataset.column_names)
-tokenized.set_format("torch")
+print(tokenized[0])
 
 # ── Model ─────────────────────────────────────────────────────────────────────
 model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
 
-# ── Training ──────────────────────────────────────────────────────────────────
-args = Seq2SeqTrainingArguments(
+# ── Data collator ─────────────────────────────────────────────────────────────
+# label_pad_token_id=-100 ensures padding in labels is ignored by the loss
+data_collator = DataCollatorForSeq2Seq(
+    tokenizer,
+    model=model,
+    padding=True,
+)
+
+# ── Training args ─────────────────────────────────────────────────────────────
+training_args = Seq2SeqTrainingArguments(
     output_dir=OUTPUT_DIR,
     num_train_epochs=EPOCHS,
     per_device_train_batch_size=BATCH_SIZE,
@@ -77,24 +83,31 @@ args = Seq2SeqTrainingArguments(
     report_to="none",
 )
 
+# ── Trainer ───────────────────────────────────────────────────────────────────
 trainer = Seq2SeqTrainer(
     model=model,
-    args=args,
+    args=training_args,
     train_dataset=tokenized,
     tokenizer=tokenizer,
-    data_collator=DataCollatorForSeq2Seq(tokenizer, model=model, padding=True),
+    data_collator=data_collator,
 )
 
 trainer.train()
+
+# ── Save (Windows-safe) ───────────────────────────────────────────────────────
+gc.collect()
+torch.cuda.empty_cache()
 model.save_pretrained(OUTPUT_DIR)
 tokenizer.save_pretrained(OUTPUT_DIR)
 print(f"\nModel saved to {OUTPUT_DIR}")
 
 # ── Inference ─────────────────────────────────────────────────────────────────
-def generate(instruction, input_text, max_new_tokens=80):
+INSTRUCTION = "Rewrite the message into a polite, professional, and empathetic customer support response."
+
+def generate(input_text, max_new_tokens=80):
     model.eval()
-    prompt = f"{instruction}\n\nMessage:\n{input_text}\n\nResponse:"
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=MAX_INPUT).to(model.device)
+    prompt = f"{INSTRUCTION}\n\nMessage:\n{input_text}\n\nResponse:"
+    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=256).to(model.device)
     with torch.no_grad():
         output = model.generate(
             **inputs,
@@ -105,8 +118,6 @@ def generate(instruction, input_text, max_new_tokens=80):
     return tokenizer.decode(output[0], skip_special_tokens=True)
 
 # ── Test samples ──────────────────────────────────────────────────────────────
-INSTRUCTION = "Rewrite the message into a polite, professional, and empathetic customer support response."
-
 samples = [
     "Not my problem. Call someone else.",
     "Your refund was denied. Nothing we can do.",
@@ -116,4 +127,4 @@ samples = [
 print("\n── Inference test ──")
 for s in samples:
     print(f"\nInput:  {s}")
-    print(f"Output: {generate(INSTRUCTION, s)}")
+    print(f"Output: {generate(s)}")
