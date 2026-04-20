@@ -1,5 +1,6 @@
 import gc
 import json
+import random
 import torch
 from datasets import Dataset
 from transformers import (
@@ -14,10 +15,18 @@ from transformers import (
 MODEL_NAME  = "google/flan-t5-base"
 DATA_PATH   = "dataset_instruct_40.jsonl"
 OUTPUT_DIR  = "./flan_output_new"
-EPOCHS      = 3
+EPOCHS      = 5
 BATCH_SIZE  = 4
 LR          = 3e-4
 FP16        = torch.cuda.is_available()
+
+TEMPLATES = [
+    "Rewrite the following message into a polite and professional customer support response.\n\nMessage:\n{}\n\nResponse:",
+    "Convert this message into a polite customer support reply:\n\n{}",
+    "Make this response more empathetic and professional:\n\n{}",
+    "Customer said:\n{}\n\nWrite a polite support response.",
+    "Improve the tone of this message:\n\n{}",
+]
 
 # ── Load dataset ──────────────────────────────────────────────────────────────
 def load_jsonl(path):
@@ -28,47 +37,28 @@ raw     = load_jsonl(DATA_PATH)
 dataset = Dataset.from_list(raw)
 
 # ── Tokenizer ─────────────────────────────────────────────────────────────────
-# T5 has its own pad token (id=0) — do not override it
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
 # ── Preprocess ────────────────────────────────────────────────────────────────
-# No padding here — DataCollatorForSeq2Seq handles padding + -100 masking
 def preprocess(example):
-    input_text = (
-        example["instruction"]
-        + "\n\nMessage:\n"
-        + example["input"]
-        + "\n\nResponse:"
-    )
+    template   = random.choice(TEMPLATES)
+    input_text = template.format(example["input"])
 
-    model_inputs = tokenizer(
+    return tokenizer(
         input_text,
+        text_target=example["output"],
         truncation=True,
         max_length=256,
     )
 
-    labels = tokenizer(
-        example["output"],
-        truncation=True,
-        max_length=128,
-    )
-
-    model_inputs["labels"] = labels["input_ids"]
-    return model_inputs
-
 tokenized = dataset.map(preprocess, remove_columns=dataset.column_names)
-print(tokenized[0])
+print("Sample after mapping:", tokenized[0])
 
 # ── Model ─────────────────────────────────────────────────────────────────────
 model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
 
 # ── Data collator ─────────────────────────────────────────────────────────────
-# label_pad_token_id=-100 ensures padding in labels is ignored by the loss
-data_collator = DataCollatorForSeq2Seq(
-    tokenizer,
-    model=model,
-    padding=True,
-)
+data_collator = DataCollatorForSeq2Seq(tokenizer, model=model, padding=True)
 
 # ── Training args ─────────────────────────────────────────────────────────────
 training_args = Seq2SeqTrainingArguments(
@@ -102,11 +92,9 @@ tokenizer.save_pretrained(OUTPUT_DIR)
 print(f"\nModel saved to {OUTPUT_DIR}")
 
 # ── Inference ─────────────────────────────────────────────────────────────────
-INSTRUCTION = "Rewrite the message into a polite, professional, and empathetic customer support response."
-
 def generate(input_text, max_new_tokens=80):
     model.eval()
-    prompt = f"{INSTRUCTION}\n\nMessage:\n{input_text}\n\nResponse:"
+    prompt = f"Rewrite the following message into a polite and professional customer support response.\n\nMessage:\n{input_text}\n\nResponse:"
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=256).to(model.device)
     with torch.no_grad():
         output = model.generate(

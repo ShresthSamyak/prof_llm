@@ -3,3 +3,6 @@ flan-output/
 flan_output_new/
 flan_output*/
 flan-output*/
+tinyllama-lora-output/
+*output/
+*output*/
