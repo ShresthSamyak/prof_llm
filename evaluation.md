@@ -44,7 +44,7 @@ A third iteration introduced a structured instruction-tuning format:
 - Avoided overuse of generic phrases (e.g., "I'm sorry")
 - Covered multiple support scenarios: refusal, delay, errors, policy, user mistakes
 
-Despite these improvements, the fine-tuned model continued to struggle, confirming that performance limitations stem from base model capability rather than dataset quality alone.
+Despite these improvements, the fine-tuned model continued to struggle, suggesting that performance limitations are likely driven more by base model capability than dataset quality alone.
 
 ### Insight
 
@@ -53,7 +53,7 @@ This experiment demonstrates that:
 - Small, non-instruction-tuned models (e.g., distilgpt2) lack the prior needed for stylistic transformation tasks
 - Prompt-based methods can outperform fine-tuning in low-data, low-compute settings
 
-Successful fine-tuning depends on both sufficient training data and a base model with meaningful instruction-following capacity.
+Successful fine-tuning depends on both sufficient training data and a base model with meaningful instruction-following capacity. These results highlight the importance of aligning model capacity, data scale, and task complexity when applying parameter-efficient fine-tuning.
 
 ## Improvements With More Time
 
